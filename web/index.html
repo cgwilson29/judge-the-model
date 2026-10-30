@@ -3,11 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Judge the Model — LCARS</title>
+  <title>Judge the Model — LCARS Bridge</title>
   <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
+  <!-- Warp-speed starfield (three.js). Falls back to plain CSS if WebGL is unavailable. -->
+  <canvas id="warp-canvas" class="warp-canvas"></canvas>
+  <div id="webgl-fallback" class="hidden">WebGL unavailable — using plain view.</div>
+
   <div class="lcars-app">
     <!-- Top command bar -->
     <header class="lcars-top-bar">
@@ -37,19 +48,27 @@
         </div>
       </aside>
 
-      <!-- Main content panel -->
+      <!-- Main content: the viewscreen. Sections render here. -->
       <main class="lcars-main">
         <section class="lcars-panel rec-panel" id="recommendations" aria-labelledby="rec-h">
           <div class="lcars-panel-header">RECOMMENDATIONS</div>
           <h2 id="rec-h">Recommendations</h2>
         </section>
         <div class="lcars-spacer"></div>
-        <div class="lcars-panel content-panel">
+        <div class="lcars-panel content-panel viewscreen">
+          <div class="viewscreen-frame"></div>
           <div class="lcars-panel-header" id="section-title"></div>
           <p class="caption" id="context"></p>
           <div id="content"><p>Loading results…</p></div>
         </div>
       </main>
+    </div>
+
+    <!-- Accessibility controls per the activity rubric -->
+    <div class="lcars-controls">
+      <button id="skip-panels" class="lcars-button">Skip to panels</button>
+      <button id="audio-toggle" class="lcars-button">Audio: Off</button>
+      <button id="webgl-toggle" class="lcars-button">WebGL: On</button>
     </div>
   </div>
 </body>

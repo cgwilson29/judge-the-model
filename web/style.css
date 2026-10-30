@@ -49,7 +49,34 @@ html, body {
   overflow: hidden;
 }
 
-/* App shell — full viewport, dark space background */
+/* Warp starfield canvas — fills the viewport, behind everything */
+.warp-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+  display: block;
+}
+
+#webgl-fallback {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: var(--lcars-red);
+  color: #000000;
+  padding: 6px 10px;
+  font-family: var(--lcars-font);
+  font-size: 11px;
+  text-transform: uppercase;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0 #000000;
+}
+.hidden { display: none; }
+
+/* App shell — full viewport, sits above the warp field */
 .lcars-app {
   position: relative;
   z-index: 1;
@@ -355,6 +382,38 @@ canvas.lcars-widget {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+/* Viewscreen frame — the border around the main content panel */
+.viewscreen-frame {
+  position: absolute;
+  inset: -6px;
+  border: 6px solid var(--lcars-orange);
+  border-radius: 14px;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--lcars-orange) 40%, transparent);
+}
+
+/* Viewscreen clickable area — switch sections by clicking the screen */
+.viewscreen {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Accessibility controls — per the activity rubric */
+.lcars-controls {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lcars-controls .lcars-button {
+  font-size: 11px;
+  padding: 6px 10px;
 }
 
 @media (max-width: 760px) {

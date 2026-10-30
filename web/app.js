@@ -4,6 +4,7 @@
 // Build each section up to its required minimum (see the activity website). Keep every number
 // coming from m11.js, and label every table and plot "Training" or "Test".
 import * as m11 from "./m11.js";
+import * as THREE from "three";
 
 const TRAIN = "Training";
 const TEST = "Test";
@@ -496,6 +497,144 @@ function init() {
 
   recommendations();
   render();
+
+  // ---- three.js warp starfield (bridge viewscreen background) ----
+  let warpRenderer, warpScene, warpCamera, warpPoints, warpAnimFrame;
+  const warpCanvas = document.getElementById("warp-canvas");
+  const webglFallback = document.getElementById("webgl-fallback");
+
+  function initWarp() {
+    if (typeof THREE === "undefined") {
+      webglFallback.classList.remove("hidden");
+      return;
+    }
+    try {
+      warpScene = new THREE.Scene();
+      warpCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      warpCamera.position.z = 0;
+
+      warpRenderer = new THREE.WebGLRenderer({ canvas: warpCanvas, alpha: false, antialias: false });
+      warpRenderer.setSize(window.innerWidth, window.innerHeight);
+      warpRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Starfield: points moving toward the camera
+      const count = 4000;
+      const positions = new Float32Array(count * 3);
+      const zStart = new Float32Array(count);
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 200;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+        positions[i * 3 + 2] = Math.random() * 1000;
+        zStart[i] = positions[i * 3 + 2];
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({
+        color: 0x5cb8ff,
+        size: 1.2,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.8
+      });
+      warpPoints = new THREE.Points(geometry, material);
+      warpScene.add(warpPoints);
+
+      // Central warp glow
+      const glowGeo = new THREE.SphereGeometry(2, 16, 16);
+      const glowMat = new THREE.MeshBasicMaterial({ color: 0x5cb8ff, transparent: true, opacity: 0.6 });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      warpScene.add(glow);
+
+      window.addEventListener("resize", onWarpResize);
+      animateWarp();
+    } catch (e) {
+      console.warn("WebGL failed:", e);
+      webglFallback.classList.remove("hidden");
+    }
+  }
+
+  function onWarpResize() {
+    if (!warpCamera || !warpRenderer) return;
+    warpCamera.aspect = window.innerWidth / window.innerHeight;
+    warpCamera.updateProjectionMatrix();
+    warpRenderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function animateWarp() {
+    if (!warpPoints || !warpRenderer) return;
+    const positions = warpPoints.geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      positions[i + 2] -= 4;
+      if (positions[i + 2] < -10) {
+        positions[i + 2] = 900;
+        positions[i] = (Math.random() - 0.5) * 200;
+        positions[i + 1] = (Math.random() - 0.5) * 200;
+      }
+    }
+    warpPoints.geometry.attributes.position.needsUpdate = true;
+    warpRenderer.render(warpScene, warpCamera);
+    warpAnimFrame = requestAnimationFrame(animateWarp);
+  }
+
+  function stopWarp() {
+    if (warpAnimFrame) cancelAnimationFrame(warpAnimFrame);
+    warpAnimFrame = null;
+  }
+
+  // ---- Web Audio (muted by default, click to engage) ----
+  let audioEnabled = false;
+  const audioToggle = document.getElementById("audio-toggle");
+
+  function toggleAudio() {
+    audioEnabled = !audioEnabled;
+    audioToggle.textContent = audioEnabled ? "Audio: On" : "Audio: Off";
+    audioToggle.style.background = audioEnabled ? "var(--lcars-red)" : "var(--lcars-orange)";
+    if (audioEnabled) {
+      ensureAudio();
+      audioReady = true;
+      chirp(880, "square", 0.1, 0.1);
+    }
+  }
+
+  audioToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleAudio();
+  });
+
+  // Modify chirp to respect audioEnabled
+  const _chirp = chirp;
+  chirp = (freq, type, gain, duration) => {
+    if (!audioEnabled) return;
+    _chirp(freq, type, gain, duration);
+  };
+
+  // ---- Section switching by clicking the viewscreen ----
+  const viewscreen = document.querySelector(".viewscreen");
+  let sectionIndex = 0;
+  viewscreen.addEventListener("click", (e) => {
+    // Don't switch if clicking inside a control (slider, select, button)
+    if (e.target.closest("input, select, button")) return;
+    sectionIndex = (sectionIndex + 1) % SECTIONS.length;
+    state.section = SECTIONS[sectionIndex];
+    // Update the sidebar dropdown to match
+    const sectionSelect = document.getElementById("section-select");
+    if (sectionSelect) sectionSelect.value = sectionIndex;
+    chirp(700, "square", 0.05, 0.05);
+    render();
+  });
+
+  // Skip to panels button
+  const skipBtn = document.getElementById("skip-panels");
+  skipBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    stopWarp();
+    warpCanvas.style.display = "none";
+    document.body.style.background = "#0a0a0a";
+    chirp(600, "square", 0.05, 0.05);
+  });
+
+  // Initialize warp
+  initWarp();
 }
 
 init();
