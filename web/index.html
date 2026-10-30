@@ -3,11 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Judge the Model</title>
+  <title>Judge the Model — LCARS</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="app.js"></script>
 </head>
 <body>
+  <header class="lcars-header scan-line">
+    <h2 class="lcars-title">LCARS</h2>
+    <span class="lcars-subtitle">JUDGE THE MODEL — CLINICAL TRIAL MATCHING &amp; PATIENT EDUCATION</span>
+    <div class="red-alert" id="red-alert" style="display:none;">RED ALERT</div>
+  </header>
   <aside class="sidebar" aria-label="Choose what to show">
     <fieldset>
       <legend>Section</legend>
@@ -17,10 +22,9 @@
     <select id="dataset"></select>
     <label for="model">Model</label>
     <select id="model"></select>
+    <canvas class="lcars-widget" id="lcars-canvas" width="220" height="130"></canvas>
   </aside>
   <main>
-    <h1>Judge the Model</h1>
-    <p class="caption">Which classifier would you trust for this job, at what threshold, and with what limits?</p>
     <section class="box" id="recommendations" aria-labelledby="rec-h"><h2 id="rec-h">Recommendations</h2></section>
     <h2 id="section-title"></h2>
     <p class="caption" id="context"></p>

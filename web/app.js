@@ -15,6 +15,137 @@ const int = (n) => n.toLocaleString("en-US");
 const state = { section: SECTIONS[0], key: "readmission", model: "logreg", thr: 0.5, cardMode: "single", cardModel: "logreg" };
 const cache = {};
 
+// ---------------- LCARS audio (Web Audio API) ----------------
+let audioCtx = null;
+let audioReady = false;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function chirp(freq = 880, type = "square", gain = 0.08, duration = 0.06) {
+  if (!audioReady) return;
+  const ctx = ensureAudio();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  g.gain.setValueAtTime(gain, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  osc.connect(g);
+  g.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + duration);
+}
+
+function initAudio() {
+  ensureAudio();
+  audioReady = true;
+}
+
+// ---------------- LCARS canvas widget (Canvas 2D animation) ----------------
+const canvas = $("lcars-canvas");
+const ctx = canvas && canvas.getContext("2d");
+let sweepAngle = 0;
+let blips = [];
+let animFrame = null;
+
+function initBlips() {
+  blips = [];
+  for (let i = 0; i < 6; i++) {
+    blips.push({
+      x: Math.random(),
+      y: Math.random(),
+      life: Math.random(),
+      speed: 0.02 + Math.random() * 0.03,
+      color: i % 2 === 0 ? "#ff9900" : "#5cb8ff"
+    });
+  }
+}
+
+function drawLcarsWidget() {
+  if (!canvas || !ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2 - 8;
+  const r = Math.min(cx, cy) - 6;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Outer ring
+  ctx.strokeStyle = "#ff9900";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Crosshairs
+  ctx.strokeStyle = "#222222";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+  ctx.stroke();
+
+  // Rotating sweep line
+  sweepAngle += 0.06;
+  const sx = cx + Math.cos(sweepAngle) * r;
+  const sy = cy + Math.sin(sweepAngle) * r;
+  ctx.strokeStyle = "#5cb8ff";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(sx, sy);
+  ctx.stroke();
+
+  // Sweep glow
+  ctx.strokeStyle = "rgba(92, 184, 255, 0.35)";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(sx, sy);
+  ctx.stroke();
+
+  // Blips
+  blips.forEach((b) => {
+    b.life += b.speed;
+    if (b.life > 1) b.life = 0;
+    const bx = cx + Math.cos(b.life * Math.PI * 2) * (r * 0.72);
+    const by = cy + Math.sin(b.life * Math.PI * 2) * (r * 0.72);
+    ctx.fillStyle = b.color;
+    ctx.globalAlpha = 1 - b.life;
+    ctx.beginPath();
+    ctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+
+  // Digital readout: current threshold
+  ctx.fillStyle = "#5cb8ff";
+  ctx.font = "bold 11px 'Courier New', Courier, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(`THR ${state.thr.toFixed(2)}`, cx, cy + r + 14);
+
+  animFrame = requestAnimationFrame(drawLcarsWidget);
+}
+
+function startLcarsAnimation() {
+  if (!canvas || !ctx) return;
+  initBlips();
+  cancelAnimationFrame(animFrame);
+  drawLcarsWidget();
+}
+
+function stopLcarsAnimation() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  animFrame = null;
+}
+
 async function load(name) {
   if (!(name in cache)) {
     // ../results/ is next to web/ on GitHub Pages; web/server.mjs serves it at the same address.
@@ -83,7 +214,7 @@ function beyondAccuracyControls(res) {
   return `
     <div class="slider" style="margin-bottom: 12px; gap: 10px;">
       <label>Model <select id="card-model">${options}</select></label>
-      <button id="card-toggle" type="button">${esc(toggleLabel)}</button>
+      <button id="card-toggle" type="button" class="lcars-button">${esc(toggleLabel)}</button>
     </div>
   `;
 }
@@ -173,7 +304,7 @@ function updateThresholdDisplay(res, model) {
   };
   $("thr-out").textContent = thr.toFixed(2);
   $("thr-slider").value = thr;
-  $("thr-roc").innerHTML = svgROC(roc, 520, 360);
+  $("thr-roc").innerHTML = svgROC(roc, 700, 460);
   $("thr-metrics").innerHTML = buildThresholdTable(thr, m, m05, delta);
 }
 
@@ -296,9 +427,10 @@ async function render() {
     const cardModel = $("card-model");
     const cardToggle = $("card-toggle");
     if (cardModel && cardToggle) {
-      cardModel.onchange = (e) => { state.cardModel = e.target.value; render(); };
+      cardModel.onchange = (e) => { state.cardModel = e.target.value; chirp(660, "square", 0.05, 0.05); render(); };
       cardToggle.onclick = () => {
         state.cardMode = state.cardMode === "single" ? "all" : "single";
+        chirp(880, "square", 0.08, 0.08);
         render();
       };
     }
@@ -315,6 +447,7 @@ async function render() {
         state.thr = Number(e.target.value);
         updateThresholdDisplay(res, model);
       };
+      slider.onchange = () => chirp(1000, "square", 0.06, 0.06);
     }
   }
 }
@@ -326,9 +459,31 @@ function init() {
   $("model").innerHTML = m11.MODELS.map((m) => `<option value="${m}">${esc(m11.MODEL_LABEL[m])}</option>`).join("");
   $("dataset").value = state.key;
   $("model").value = state.model;
-  $("sections").addEventListener("change", (e) => { state.section = SECTIONS[Number(e.target.value)]; render(); });
-  $("dataset").addEventListener("change", (e) => { state.key = e.target.value; render(); });
-  $("model").addEventListener("change", (e) => { state.model = e.target.value; render(); });
+
+  // Section radios
+  $("sections").addEventListener("change", (e) => {
+    state.section = SECTIONS[Number(e.target.value)];
+    chirp(700, "square", 0.05, 0.05);
+    render();
+  });
+  $("dataset").addEventListener("change", (e) => {
+    state.key = e.target.value;
+    chirp(750, "square", 0.05, 0.05);
+    render();
+  });
+  $("model").addEventListener("change", (e) => {
+    state.model = e.target.value;
+    chirp(800, "square", 0.05, 0.05);
+    render();
+  });
+
+  // Initialize audio on first user interaction
+  document.body.addEventListener("click", initAudio, { once: true });
+  document.body.addEventListener("keydown", initAudio, { once: true });
+
+  // Start LCARS canvas animation
+  startLcarsAnimation();
+
   recommendations();
   render();
 }
