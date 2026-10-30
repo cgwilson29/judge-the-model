@@ -192,18 +192,14 @@ function thresholdPage(res, model) {
     return d >= 0 ? `+${d.toFixed(1)}%` : `${d.toFixed(1)}%`;
   };
   return `
-    <div class="cols">
-      <div class="box" style="flex: 1">
-        ${caption(`${TEST} · ${m11.MODEL_LABEL[model]} — AUROC ${m11.fmtNum(auroc)} (ranking, not accuracy)`)}
-        <div id="thr-roc">${svgROC(roc, 520, 360)}</div>
-        <p class="caption">ROC curve: each point is a threshold. The diagonal is chance guessing. AUROC is the area under it.</p>
-      </div>
-      <div class="box" style="flex: 1; display: flex; flex-direction: column">
-        ${thresholdSlider(thr)}
-        <div id="thr-metrics">${buildThresholdTable(thr, m, m05, delta)}</div>
-        <p class="caption">The threshold is a decision separate from the model. Moving it trades missed positives against false alarms — there is no single "best" threshold for every job.</p>
-      </div>
+    <div class="box" style="margin-bottom: 16px;">
+      ${caption(`${TEST} · ${m11.MODEL_LABEL[model]} — AUROC ${m11.fmtNum(auroc)} (ranking, not accuracy)`)}
+      <div id="thr-roc">${svgROC(roc, 700, 460)}</div>
+      <p class="caption">ROC curve: each point is a threshold. The diagonal is chance guessing. AUROC is the area under it.</p>
     </div>
+    ${thresholdSlider(thr)}
+    <div id="thr-metrics">${buildThresholdTable(thr, m, m05, delta)}</div>
+    <p class="caption">The threshold is a decision separate from the model. Moving it trades missed positives against false alarms — there is no single "best" threshold for every job.</p>
   `;
 }
 
@@ -267,16 +263,12 @@ function trainVsTest(res) {
   }
   return `
     ${caption(`${TRAIN} vs ${TEST} · AUROC on rows the model learned from, and on rows it never saw. A training result is never a test result.`)}
-    <div class="cols">
-      <div class="box" style="flex: 2">${svgBarChart(s, 700, 340)}</div>
-      <div class="box" style="flex: 1">
-        <table>
-          <tr><th>Model</th><th>${TRAIN}</th><th>${TEST}</th><th>Gap</th><th>Flag</th></tr>
-          ${parts.join("")}
-        </table>
-        <p class="caption">Training flatters every model. A large gap (e.g. random forest on readmission) means the model memorised its training patients and will not generalise to new ones.</p>
-      </div>
-    </div>
+    <div class="box" style="margin-bottom: 16px;">${svgBarChart(s, 760, 440)}</div>
+    <table>
+      <tr><th>Model</th><th>${TRAIN}</th><th>${TEST}</th><th>Gap</th><th>Flag</th></tr>
+      ${parts.join("")}
+    </table>
+    <p class="caption">Training flatters every model. A large gap (e.g. random forest on readmission) means the model memorised its training patients and will not generalise to new ones.</p>
   `;
 }
 
