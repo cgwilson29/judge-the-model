@@ -1,14 +1,27 @@
 /* ===== LCARS Theme — Star Trek TNG style ===== */
+/* Font note: Swiss 911 Ultra Compressed / Compacta Light / Edge of the Galaxy are
+   licensed display fonts. To use them exactly, add @font-face rules pointing at
+   your licensed font files and set --lcars-font to that family name. The stack
+   below approximates the compressed LCARS look with condensed system fonts. */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Condensed:wght@400;700&display=swap");
+
 :root {
+  /* LCARS palette */
   --lcars-orange: #ff9900;
   --lcars-blue: #5cb8ff;
   --lcars-light-blue: #99ccff;
+  --lcars-pale-blue: #cce6ff;
   --lcars-gray: #cccccc;
   --lcars-dark-gray: #666666;
   --lcars-black: #0a0a0a;
   --lcars-red: #ff0000;
 
-  --bg: var(--lcars-black);
+  /* Display font stack (compressed, LCARS-like) */
+  --lcars-font: "Noto Sans Condensed", "Noto Sans", "Arial Narrow",
+                "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+
+  /* Mapped variables */
+  --bg: #050505;
   --fg: #000000;
   --muted: #333333;
   --line: #222222;
@@ -30,19 +43,21 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: #0a0a0a;
+  background: var(--bg);
   color: #000000;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
   overflow: hidden; /* app fills the viewport; no background shows */
 }
 
-/* Ship blueprint background — fills the whole viewport, panels sit on top */
+/* Ship blueprint background — fixed behind everything, reliable on refresh */
 .ship-blueprint {
   position: fixed;
   inset: 0;
-  z-index: 0;
-  opacity: 0.25;
-  pointer-events: none;
+  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #050505; /* solid fallback so it never reads as "empty black" */
 }
 .ship-blueprint svg {
   width: 100%;
@@ -50,13 +65,13 @@ html, body {
   display: block;
 }
 
-/* App shell — covers everything, no background leaks through */
+/* App shell — full viewport, transparent so the ship shows between panels */
 .lcars-app {
   position: relative;
   z-index: 1;
   height: 100vh;
   display: grid;
-  grid-template-rows: 60px 1fr;
+  grid-template-rows: 56px 1fr;
   grid-template-columns: 1fr;
   gap: 0;
   background: transparent;
@@ -68,23 +83,24 @@ html, body {
   align-items: center;
   gap: 16px;
   padding: 0 24px;
-  background: var(--lcars-black);
+  background: #000000;
   border-bottom: 4px solid var(--lcars-orange);
   box-shadow: 0 4px 0 var(--lcars-orange);
   z-index: 10;
+  flex-shrink: 0;
 }
 .lcars-station-tag {
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
+  font-family: var(--lcars-font);
+  font-weight: 700;
   color: var(--lcars-orange);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   letter-spacing: 3px;
   text-transform: uppercase;
 }
 .lcars-ship-id {
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
   color: var(--lcars-blue);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 1px;
   text-transform: uppercase;
   flex: 1;
@@ -93,9 +109,9 @@ html, body {
   margin-left: 16px;
 }
 .lcars-status {
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
   color: var(--lcars-gray);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
 }
 
@@ -111,38 +127,38 @@ html, body {
 /* ---------- LCARS structural panel ---------- */
 .lcars-panel {
   border: 3px solid var(--lcars-orange);
-  border-radius: 12px;
-  box-shadow: 5px 5px 0 var(--lcars-black);
+  border-radius: 10px;
+  box-shadow: 5px 5px 0 #000000;
   margin: 10px;
-  background: var(--lcars-light-blue);
   position: relative;
   overflow: hidden;
 }
-.lcars-panel-blue { border-color: var(--lcars-blue); background: var(--lcars-blue); }
+.lcars-panel-blue { border-color: var(--lcars-blue); background: var(--lcars-pale-blue); }
 .lcars-panel-gray { border-color: var(--lcars-gray); background: var(--lcars-gray); }
 .lcars-panel-orange { border-color: var(--lcars-orange); background: var(--lcars-orange); }
 
 .lcars-panel-header {
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
+  font-family: var(--lcars-font);
+  font-weight: 700;
   font-size: 0.85rem;
   color: #000000;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 6px 10px;
   border-bottom: 2px solid #000000;
-  background: color-mix(in srgb, #000000 15%, transparent);
+  background: #0000001a;
 }
 
-/* Sidebar stations */
+/* Sidebar stations — opaque, high contrast */
 .lcars-sidebar {
-  background: rgba(10, 10, 10, 0.92);
+  background: #000000;
   border-right: 4px solid var(--lcars-orange);
   padding: 12px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
 }
 .lcars-station {
   display: flex;
@@ -150,64 +166,82 @@ html, body {
   gap: 4px;
 }
 .lcars-station-header {
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
-  font-size: 0.8rem;
+  font-family: var(--lcars-font);
+  font-weight: 700;
+  font-size: 0.75rem;
   color: var(--lcars-orange);
   text-transform: uppercase;
   letter-spacing: 1px;
   border-bottom: 1px solid var(--lcars-orange);
   padding-bottom: 2px;
 }
-.lcars-sidebar select {
+.lcars-sidebar select,
+#section-select {
   width: 100%;
   padding: 6px 8px;
-  background: #000000;
-  color: var(--lcars-pale, #e6e6e6);
+  background: #111111;
+  color: #e6e6e6;
   border: 2px solid var(--lcars-orange);
   border-radius: 0;
   font: inherit;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
   font-size: 13px;
+  font-weight: 600;
 }
-.lcars-sidebar select:focus { outline: none; border-color: var(--lcars-blue); }
+.lcars-sidebar select:focus,
+#section-select:focus { outline: none; border-color: var(--lcars-blue); color: #ffffff; }
+.lcars-sidebar select option { background: #111111; color: #e6e6e6; }
 
 /* Main content area */
 .lcars-main {
   padding: 16px;
   overflow-y: auto;
-  background: rgba(0, 0, 0, 0.88);
+  background: rgba(0, 0, 0, 0.92);
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex: 1 1 auto;
 }
 .lcars-spacer { flex: 0 0 16px; }
 
 /* Recommendations panel */
-.rec-panel h2 { margin: 8px 0 0; font-size: 1rem; font-family: "Courier New", Courier, monospace; color: #000000; }
+.rec-panel h2 { margin: 8px 0 0; font-size: 1rem; font-family: var(--lcars-font); color: #000000; }
 
 /* ---------- Existing component classes (LCARS-styled) ---------- */
-h1, h2 { font-family: "Courier New", Courier, monospace; margin: 0 0 4px; color: var(--lcars-orange); }
+h1, h2 { font-family: var(--lcars-font); margin: 0 0 4px; color: var(--lcars-orange); }
 h2 { border-bottom: 2px solid var(--lcars-orange); padding-bottom: 4px; font-size: 1.1rem; text-transform: uppercase; }
 
 .caption {
   color: var(--lcars-dark-gray);
   font-size: 11px;
   margin: 6px 0 10px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* Ensure text inside panels is readable (black on light panels) */
+.lcars-panel, .box, .card, .rec-panel {
+  color: #000000;
+}
+.lcars-panel p, .lcars-panel caption, .lcars-panel td, .lcars-panel th,
+.box p, .box caption, .box td, .box th,
+.card p, .card td, .card th,
+.rec-panel p, .rec-panel td, .rec-panel th { color: #000000; }
+
+/* Dark-text overrides for anything inside light panels */
+.lcars-panel strong, .lcars-panel b, .lcars-panel h2, .lcars-panel-header { color: #000000; }
 
 .box {
   border: 3px solid var(--lcars-orange);
   border-radius: 10px;
   padding: 10px 14px;
   background: var(--lcars-light-blue);
-  box-shadow: 4px 4px 0 var(--lcars-black);
+  box-shadow: 4px 4px 0 #000000;
   margin: 4px 0;
+  color: #000000;
 }
-.box h2 { margin-top: 0; font-size: 1rem; }
+.box h2 { margin-top: 0; font-size: 1rem; color: #000000; }
 
 /* Cards — Section 1 */
 .cards { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 8px 0; }
@@ -216,18 +250,19 @@ h2 { border-bottom: 2px solid var(--lcars-orange); padding-bottom: 4px; font-siz
   border-radius: 10px;
   padding: 10px 12px;
   background: var(--lcars-light-blue);
-  box-shadow: 4px 4px 0 var(--lcars-black);
+  box-shadow: 4px 4px 0 #000000;
+  color: #000000;
 }
 .card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-.card-head strong { font-family: "Courier New", Courier, monospace; font-weight: bold; color: #000000; font-size: 1rem; }
+.card-head strong { font-family: var(--lcars-font); font-weight: 700; color: #000000; font-size: 1rem; }
 .badge {
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
   background: #000000;
   color: var(--lcars-orange);
-  font-weight: bold;
+  font-weight: 700;
   border: 1px solid var(--lcars-orange);
 }
 .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
@@ -238,29 +273,29 @@ h2 { border-bottom: 2px solid var(--lcars-orange); padding-bottom: 4px; font-siz
   text-align: center;
   background: var(--lcars-blue);
 }
-.stat-big { font-size: 18px; font-weight: bold; font-variant-numeric: tabular-nums; color: #000000; }
-.stat-label { font-size: 9px; color: #000000; margin-top: 2px; font-family: "Courier New", Courier, monospace; text-transform: uppercase; }
-.card table { font-size: 12px; margin: 0; width: 100%; font-family: "Courier New", Courier, monospace; }
+.stat-big { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: #000000; }
+.stat-label { font-size: 9px; color: #000000; margin-top: 2px; font-family: var(--lcars-font); text-transform: uppercase; }
+.card table { font-size: 12px; margin: 0; width: 100%; font-family: var(--lcars-font); color: #000000; }
 .card th, .card td { border: 1px solid #000000; padding: 4px 6px; }
 .card td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Slider */
 .slider { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
 .slider input { flex: 1; max-width: 480px; accent-color: var(--lcars-orange); }
-.slider output { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 3ch; font-family: "Courier New", Courier, monospace; }
-.slider label { font-family: "Courier New", Courier, monospace; font-size: 12px; color: var(--lcars-orange); text-transform: uppercase; }
+.slider output { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 3ch; font-family: var(--lcars-font); }
+.slider label { font-family: var(--lcars-font); font-size: 12px; color: var(--lcars-orange); text-transform: uppercase; }
 
 /* Tables */
 .table-wrap { overflow-x: auto; }
-table { border-collapse: collapse; margin: 4px 0 12px; font-size: 12px; font-family: "Courier New", Courier, monospace; }
+table { border-collapse: collapse; margin: 4px 0 12px; font-size: 12px; font-family: var(--lcars-font); color: #000000; }
 th, td { border: 1px solid #000000; padding: 5px 10px; text-align: left; vertical-align: top; }
-thead th { background: var(--lcars-orange); color: #000000; font-weight: bold; }
-tbody th { font-weight: 600; color: var(--lcars-blue); }
+thead th { background: var(--lcars-orange); color: #000000; font-weight: 700; }
+tbody th { font-weight: 700; color: var(--lcars-blue); }
 td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* SVG graphs */
 svg { width: 100%; height: auto; display: block; overflow: visible; background: #000000; border: 2px solid var(--lcars-orange); border-radius: 6px; }
-svg text { fill: var(--lcars-dark-gray); font-size: 10px; font-family: "Courier New", Courier, monospace; }
+svg text { fill: #000000; font-size: 10px; font-family: var(--lcars-font); }
 svg .axis { stroke: var(--lcars-dark-gray); }
 svg .grid { stroke: var(--lcars-dark-gray); stroke-opacity: 0.5; }
 svg .diag { stroke: var(--lcars-dark-gray); stroke-dasharray: 5 4; }
@@ -271,8 +306,8 @@ svg .diag { stroke: var(--lcars-dark-gray); stroke-dasharray: 5 4; }
   color: #000000;
   border: 2px solid #000000;
   padding: 6px 14px;
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
+  font-family: var(--lcars-font);
+  font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 4px 4px 0 #000000;
@@ -291,7 +326,7 @@ svg .diag { stroke: var(--lcars-dark-gray); stroke-dasharray: 5 4; }
   font-weight: 700;
   color: var(--lcars-red);
   white-space: nowrap;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--lcars-font);
 }
 .flag-cell { white-space: nowrap; }
 .flag-cell .flash-warn { font-size: 1.1em; }
@@ -304,7 +339,7 @@ canvas.lcars-widget {
   border: 3px solid var(--lcars-orange);
   border-radius: 8px;
   display: block;
-  box-shadow: 4px 4px 0 var(--lcars-black);
+  box-shadow: 4px 4px 0 #000000;
   margin-top: 8px;
 }
 
@@ -312,8 +347,8 @@ canvas.lcars-widget {
   background: var(--lcars-red);
   color: white;
   animation: blink 0.5s infinite;
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
+  font-family: var(--lcars-font);
+  font-weight: 700;
   padding: 8px;
   text-align: center;
   border: 3px solid #000000;
@@ -325,4 +360,12 @@ canvas.lcars-widget {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+@media (max-width: 760px) {
+  .lcars-body { grid-template-columns: 1fr; }
+  .lcars-sidebar { border-right: 0; border-bottom: 4px solid var(--lcars-orange); }
+  .lcars-main { padding: 12px; }
+  .lcars-top-bar { flex-direction: column; gap: 8px; padding: 12px; }
+  .lcars-ship-id { border-left: none; border-top: 2px solid var(--lcars-orange); padding-left: 0; padding-top: 8px; margin-left: 0; margin-top: 8px; width: 100%; text-align: center; }
 }

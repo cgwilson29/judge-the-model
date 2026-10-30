@@ -453,15 +453,15 @@ async function render() {
 }
 
 function init() {
-  $("sections").innerHTML = SECTIONS.map((s, i) => `<label class="radio"><input type="radio" name="section" value="${i}"
-    ${s === state.section ? "checked" : ""}>${esc(s)}</label>`).join("");
+  const sectionSelect = $("section-select");
+  sectionSelect.innerHTML = SECTIONS.map((s, i) => `<option value="${i}" ${i === SECTIONS.indexOf(state.section) ? "selected" : ""}>${esc(s)}</option>`).join("");
   $("dataset").innerHTML = m11.DATASETS.map((k) => `<option value="${k}">${esc(m11.DATASET_LABEL[k])}</option>`).join("");
   $("model").innerHTML = m11.MODELS.map((m) => `<option value="${m}">${esc(m11.MODEL_LABEL[m])}</option>`).join("");
   $("dataset").value = state.key;
   $("model").value = state.model;
 
-  // Section radios
-  $("sections").addEventListener("change", (e) => {
+  // Section dropdown
+  sectionSelect.addEventListener("change", (e) => {
     state.section = SECTIONS[Number(e.target.value)];
     chirp(700, "square", 0.05, 0.05);
     render();
