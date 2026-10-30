@@ -193,6 +193,13 @@ html, body {
   height: 1fr;
   gap: 0;
   overflow: hidden;
+  min-height: 0;
+}
+
+/* Allow grid items to shrink so scrolling works */
+.lcars-sidebar, .lcars-main {
+  min-height: 0;
+  overflow: auto;
 }
 
 /* ---------- LCARS structural panel ---------- */
@@ -273,6 +280,7 @@ html, body {
   flex-direction: column;
   gap: 14px;
   flex: 1 1 auto;
+  min-height: 0;
 }
 .lcars-spacer { flex: 0 0 16px; }
 
@@ -365,8 +373,10 @@ thead th { background: var(--lcars-orange); color: #000000; font-weight: 700; }
 tbody th { font-weight: 700; color: var(--lcars-blue); }
 td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
-/* SVG graphs */
-svg { width: 100%; height: auto; display: block; overflow: visible; background: #000000; border: 2px solid var(--lcars-orange); border-radius: 6px; }
+/* SVG graphs — constrained height so tables below remain reachable */
+svg { width: 100%; height: auto; display: block; overflow: visible; background: #000000; border: 2px solid var(--lcars-orange); border-radius: 6px; max-height: 300px; }
+
+.graph-wrap { max-height: 320px; overflow: auto; }
 svg text { fill: #000000; font-size: 10px; font-family: var(--lcars-font); }
 svg .axis { stroke: var(--lcars-dark-gray); }
 svg .grid { stroke: var(--lcars-dark-gray); stroke-opacity: 0.5; }

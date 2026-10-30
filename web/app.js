@@ -325,7 +325,7 @@ function thresholdPage(res, model) {
   return `
     <div class="box" style="margin-bottom: 16px;">
       ${caption(`${TEST} · ${m11.MODEL_LABEL[model]} — AUROC ${m11.fmtNum(auroc)} (ranking, not accuracy)`)}
-      <div id="thr-roc">${svgROC(roc, 700, 460)}</div>
+      <div id="thr-roc" style="max-height: 340px; overflow: auto;">${svgROC(roc, 560, 320)}</div>
       <p class="caption">ROC curve: each point is a threshold. The diagonal is chance guessing. AUROC is the area under it.</p>
     </div>
     ${thresholdSlider(thr)}
@@ -394,7 +394,7 @@ function trainVsTest(res) {
   }
   return `
     ${caption(`${TRAIN} vs ${TEST} · AUROC on rows the model learned from, and on rows it never saw. A training result is never a test result.`)}
-    <div class="box" style="margin-bottom: 16px;">${svgBarChart(s, 760, 440)}</div>
+    <div class="box" style="margin-bottom: 16px; max-height: 320px; overflow: auto;">${svgBarChart(s, 640, 280)}</div>
     <table>
       <tr><th>Model</th><th>${TRAIN}</th><th>${TEST}</th><th>Gap</th><th>Flag</th></tr>
       ${parts.join("")}
