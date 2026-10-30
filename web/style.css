@@ -42,6 +42,27 @@ svg .rule { stroke: var(--fg); stroke-width: 3; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin: 4px 0; }
 .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
 .slider { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+
+/* Section 1: model cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 12px 0 24px; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--panel); }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.badge { font-size: 11px; padding: 2px 6px; border-radius: 10px; background: var(--line); color: var(--fg); font-weight: 600; }
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.card-cell { border: 1px solid var(--line); border-radius: 6px; padding: 8px 6px; text-align: center; background: var(--bg); }
+.stat-big { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.2; }
+.card table { font-size: 13px; margin: 0; }
+.card td.num, .card th { padding: 4px 6px; }
+
+/* Section 2: ROC curve */
+.roc-svg { margin: 8px 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+
+/* Section 3: paired bar chart */
+.bar-svg { margin: 8px 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.bar-train { cursor: default; }
+.bar-test { cursor: default; }
+
 .slider input { flex: 1; max-width: 480px; accent-color: var(--accent); }
 .slider output { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 3ch; }
 @media (max-width: 760px) {
