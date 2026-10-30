@@ -1,19 +1,18 @@
-/* LCARS Theme — Star Trek TNG inspired */
+/* ===== LCARS Theme — Star Trek TNG style ===== */
 :root {
-  /* LCARS palette */
-  --lcars-black: #0a0a0a;
   --lcars-orange: #ff9900;
   --lcars-blue: #5cb8ff;
+  --lcars-light-blue: #99ccff;
   --lcars-gray: #cccccc;
+  --lcars-dark-gray: #666666;
+  --lcars-black: #0a0a0a;
   --lcars-red: #ff0000;
-  --lcars-pale: #e6e6e6;
 
-  /* Map existing variables to LCARS */
   --bg: var(--lcars-black);
-  --fg: var(--lcars-pale);
-  --muted: #8a8a8a;
-  --line: #333333;
-  --panel: #141414;
+  --fg: #000000;
+  --muted: #333333;
+  --line: #222222;
+  --panel: #1a1a1a;
   --accent: var(--lcars-orange);
   --pos: var(--lcars-red);
   --neg: var(--lcars-blue);
@@ -27,146 +26,303 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 "Courier New", Courier, monospace;
-       display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
-.sidebar { background: var(--panel); border-right: 4px solid var(--lcars-orange); padding: 16px 12px; }
-.sidebar fieldset { border: 2px solid var(--lcars-orange); padding: 10px; margin: 12px 0; border-radius: 0; }
-.sidebar legend, .sidebar label { font-weight: 600; display: block; margin: 8px 0 4px; color: var(--lcars-orange); text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-.sidebar .radio { display: flex; gap: 8px; align-items: baseline; margin: 4px 0; font-weight: 400; font-size: 13px; }
-select { width: 100%; padding: 6px; background: var(--lcars-black); color: var(--lcars-pale); border: 2px solid var(--lcars-orange); border-radius: 0; font: inherit; font-family: "Courier New", Courier, monospace; }
-main { padding: 24px 32px 64px; max-width: 1100px; min-width: 0; }
-h1 { margin: 0 0 4px; font-family: "Courier New", Courier, monospace; }
-h2 { margin: 28px 0 4px; font-family: "Courier New", Courier, monospace; color: var(--lcars-orange); border-bottom: 2px solid var(--lcars-orange); padding-bottom: 4px; }
-.caption { color: var(--muted); font-size: 12px; margin: 10px 0 6px; font-family: "Courier New", Courier, monospace; }
-.box { border: 2px solid var(--lcars-orange); border-radius: 0; padding: 10px 14px 6px; background: var(--panel); box-shadow: 4px 4px 0 var(--lcars-black); }
-.box h2 { margin-top: 0; font-size: 1.1rem; }
-.info { background: color-mix(in srgb, var(--lcars-orange) 20%, transparent); border: 2px solid var(--lcars-orange); border-radius: 0; padding: 10px 14px; font-family: "Courier New", Courier, monospace; }
-.warn { background: color-mix(in srgb, var(--lcars-red) 20%, transparent); border: 2px solid var(--lcars-red); border-radius: 0; padding: 10px 14px; font-family: "Courier New", Courier, monospace; }
-.table-wrap { overflow-x: auto; }
-table { border-collapse: collapse; margin: 4px 0 12px; font-size: 13px; font-family: "Courier New", Courier, monospace; }
-th, td { border: 1px solid var(--line); padding: 5px 10px; text-align: left; vertical-align: top; }
-thead th { background: var(--lcars-orange); color: var(--lcars-black); }
-tbody th { font-weight: 600; color: var(--lcars-blue); }
-td.num { text-align: right; font-variant-numeric: tabular-nums; }
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-svg { width: 100%; height: auto; display: block; overflow: visible; }
-svg text { fill: var(--muted); font-size: 11px; font-family: "Courier New", Courier, monospace; }
-svg .axis { stroke: var(--line); }
-svg .grid { stroke: var(--line); stroke-opacity: 0.5; }
-svg .diag { stroke: var(--muted); stroke-dasharray: 5 4; }
-svg .rule { stroke: var(--fg); stroke-width: 3; }
-.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); margin: 4px 0; font-family: "Courier New", Courier, monospace; }
-.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
-.slider { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
-.slider input { flex: 1; max-width: 480px; accent-color: var(--lcars-orange); }
-.slider output { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 3ch; font-family: "Courier New", Courier, monospace; }
 
-/* LCARS structural components */
-.lcars-header {
-  grid-column: 1 / -1;
-  background: var(--lcars-black);
-  border-bottom: 6px solid var(--lcars-orange);
-  padding: 14px 24px;
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #0a0a0a;
+  color: #000000;
+  font-family: "Courier New", Courier, monospace;
+  overflow: hidden; /* app fills the viewport; no background shows */
+}
+
+/* Ship blueprint background — fills the whole viewport, panels sit on top */
+.ship-blueprint {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.25;
+  pointer-events: none;
+}
+.ship-blueprint svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* App shell — covers everything, no background leaks through */
+.lcars-app {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 60px 1fr;
+  grid-template-columns: 1fr;
+  gap: 0;
+  background: transparent;
+}
+
+/* Top command bar */
+.lcars-top-bar {
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 6px 0 var(--lcars-orange);
-  position: relative;
+  padding: 0 24px;
+  background: var(--lcars-black);
+  border-bottom: 4px solid var(--lcars-orange);
+  box-shadow: 0 4px 0 var(--lcars-orange);
   z-index: 10;
 }
-.lcars-title {
+.lcars-station-tag {
   font-family: "Courier New", Courier, monospace;
   font-weight: bold;
   color: var(--lcars-orange);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  margin: 0;
 }
-.lcars-subtitle {
+.lcars-ship-id {
   font-family: "Courier New", Courier, monospace;
   color: var(--lcars-blue);
-  font-size: 0.9rem;
-  margin: 0;
-  opacity: 0.9;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  flex: 1;
+  border-left: 2px solid var(--lcars-orange);
+  padding-left: 16px;
+  margin-left: 16px;
 }
+.lcars-status {
+  font-family: "Courier New", Courier, monospace;
+  color: var(--lcars-gray);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+/* Body: sidebar + main */
+.lcars-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 1fr;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ---------- LCARS structural panel ---------- */
 .lcars-panel {
-  background: var(--panel);
   border: 3px solid var(--lcars-orange);
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: 5px 5px 0 var(--lcars-black);
+  margin: 10px;
+  background: var(--lcars-light-blue);
+  position: relative;
+  overflow: hidden;
 }
-.lcars-angled {
-  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%, 0 15%);
+.lcars-panel-blue { border-color: var(--lcars-blue); background: var(--lcars-blue); }
+.lcars-panel-gray { border-color: var(--lcars-gray); background: var(--lcars-gray); }
+.lcars-panel-orange { border-color: var(--lcars-orange); background: var(--lcars-orange); }
+
+.lcars-panel-header {
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border-bottom: 2px solid #000000;
+  background: color-mix(in srgb, #000000 15%, transparent);
 }
+
+/* Sidebar stations */
+.lcars-sidebar {
+  background: rgba(10, 10, 10, 0.92);
+  border-right: 4px solid var(--lcars-orange);
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lcars-station {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lcars-station-header {
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: var(--lcars-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--lcars-orange);
+  padding-bottom: 2px;
+}
+.lcars-sidebar select {
+  width: 100%;
+  padding: 6px 8px;
+  background: #000000;
+  color: var(--lcars-pale, #e6e6e6);
+  border: 2px solid var(--lcars-orange);
+  border-radius: 0;
+  font: inherit;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+}
+.lcars-sidebar select:focus { outline: none; border-color: var(--lcars-blue); }
+
+/* Main content area */
+.lcars-main {
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lcars-spacer { flex: 0 0 16px; }
+
+/* Recommendations panel */
+.rec-panel h2 { margin: 8px 0 0; font-size: 1rem; font-family: "Courier New", Courier, monospace; color: #000000; }
+
+/* ---------- Existing component classes (LCARS-styled) ---------- */
+h1, h2 { font-family: "Courier New", Courier, monospace; margin: 0 0 4px; color: var(--lcars-orange); }
+h2 { border-bottom: 2px solid var(--lcars-orange); padding-bottom: 4px; font-size: 1.1rem; text-transform: uppercase; }
+
+.caption {
+  color: var(--lcars-dark-gray);
+  font-size: 11px;
+  margin: 6px 0 10px;
+  font-family: "Courier New", Courier, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.box {
+  border: 3px solid var(--lcars-orange);
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--lcars-light-blue);
+  box-shadow: 4px 4px 0 var(--lcars-black);
+  margin: 4px 0;
+}
+.box h2 { margin-top: 0; font-size: 1rem; }
+
+/* Cards — Section 1 */
+.cards { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 8px 0; }
+.card {
+  border: 3px solid var(--lcars-orange);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--lcars-light-blue);
+  box-shadow: 4px 4px 0 var(--lcars-black);
+}
+.card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.card-head strong { font-family: "Courier New", Courier, monospace; font-weight: bold; color: #000000; font-size: 1rem; }
+.badge {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #000000;
+  color: var(--lcars-orange);
+  font-weight: bold;
+  border: 1px solid var(--lcars-orange);
+}
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+.card-cell {
+  border: 2px solid #000000;
+  border-radius: 6px;
+  padding: 6px 4px;
+  text-align: center;
+  background: var(--lcars-blue);
+}
+.stat-big { font-size: 18px; font-weight: bold; font-variant-numeric: tabular-nums; color: #000000; }
+.stat-label { font-size: 9px; color: #000000; margin-top: 2px; font-family: "Courier New", Courier, monospace; text-transform: uppercase; }
+.card table { font-size: 12px; margin: 0; width: 100%; font-family: "Courier New", Courier, monospace; }
+.card th, .card td { border: 1px solid #000000; padding: 4px 6px; }
+.card td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Slider */
+.slider { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+.slider input { flex: 1; max-width: 480px; accent-color: var(--lcars-orange); }
+.slider output { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 3ch; font-family: "Courier New", Courier, monospace; }
+.slider label { font-family: "Courier New", Courier, monospace; font-size: 12px; color: var(--lcars-orange); text-transform: uppercase; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; margin: 4px 0 12px; font-size: 12px; font-family: "Courier New", Courier, monospace; }
+th, td { border: 1px solid #000000; padding: 5px 10px; text-align: left; vertical-align: top; }
+thead th { background: var(--lcars-orange); color: #000000; font-weight: bold; }
+tbody th { font-weight: 600; color: var(--lcars-blue); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* SVG graphs */
+svg { width: 100%; height: auto; display: block; overflow: visible; background: #000000; border: 2px solid var(--lcars-orange); border-radius: 6px; }
+svg text { fill: var(--lcars-dark-gray); font-size: 10px; font-family: "Courier New", Courier, monospace; }
+svg .axis { stroke: var(--lcars-dark-gray); }
+svg .grid { stroke: var(--lcars-dark-gray); stroke-opacity: 0.5; }
+svg .diag { stroke: var(--lcars-dark-gray); stroke-dasharray: 5 4; }
+
+/* Buttons */
 .lcars-button {
   background: var(--lcars-orange);
-  color: var(--lcars-black);
-  border: 2px solid var(--lcars-black);
-  padding: 8px 16px;
+  color: #000000;
+  border: 2px solid #000000;
+  padding: 6px 14px;
   font-family: "Courier New", Courier, monospace;
   font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 4px 4px 0 var(--lcars-black);
-  font-size: 13px;
+  box-shadow: 4px 4px 0 #000000;
+  font-size: 12px;
+  border-radius: 0;
 }
-.lcars-button:active {
-  box-shadow: 1px 1px 0 var(--lcars-black);
-  transform: translate(3px, 3px);
-}
-.red-alert {
-  background: var(--lcars-red);
-  color: white;
-  animation: blink 0.6s infinite;
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
-  padding: 10px;
-  text-align: center;
-  border: 3px solid var(--lcars-black);
-  box-shadow: 3px 3px 0 var(--lcars-black);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-@keyframes blink {
+.lcars-button:active { box-shadow: 1px 1px 0 #000000; transform: translate(3px, 3px); }
+
+/* Section 3 flashing warning */
+@keyframes flash {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
 }
-.scan-line {
-  position: relative;
-  overflow: hidden;
+.flash-warn {
+  animation: flash 1.2s infinite;
+  font-weight: 700;
+  color: var(--lcars-red);
+  white-space: nowrap;
+  font-family: "Courier New", Courier, monospace;
 }
-.scan-line::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--lcars-blue) 40%, transparent), transparent);
-  animation: scan 2.5s linear infinite;
-  pointer-events: none;
-}
-@keyframes scan {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
+.flag-cell { white-space: nowrap; }
+.flag-cell .flash-warn { font-size: 1.1em; }
 
 /* Canvas widget */
 canvas.lcars-widget {
   width: 100%;
-  height: 140px;
-  background: var(--lcars-black);
+  height: 120px;
+  background: #000000;
   border: 3px solid var(--lcars-orange);
+  border-radius: 8px;
   display: block;
   box-shadow: 4px 4px 0 var(--lcars-black);
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
-@media (max-width: 760px) {
-  body { grid-template-columns: 1fr; }
-  .sidebar { border-right: 0; border-bottom: 4px solid var(--lcars-orange); }
-  main { padding: 16px; }
-  .cols { grid-template-columns: 1fr; }
-  .lcars-header { grid-column: 1 / -1; }
+.red-alert {
+  background: var(--lcars-red);
+  color: white;
+  animation: blink 0.5s infinite;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
+  padding: 8px;
+  text-align: center;
+  border: 3px solid #000000;
+  box-shadow: 3px 3px 0 #000000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 11px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
