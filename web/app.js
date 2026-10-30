@@ -12,7 +12,7 @@ const SECTIONS = ["1. Beyond Accuracy", "2. A Threshold for the Job", "3. Traini
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const int = (n) => n.toLocaleString("en-US");
-const state = { section: SECTIONS[0], key: "readmission", model: "logreg", thr: 0.5 };
+const state = { section: SECTIONS[0], key: "readmission", model: "logreg", thr: 0.5, cardMode: "single", cardModel: "logreg" };
 const cache = {};
 
 async function load(name) {
@@ -25,7 +25,6 @@ async function load(name) {
 }
 
 const caption = (text) => `<p class="caption">${esc(text)}</p>`;
-const starterNote = (text) => `<p class="info">Starter display: ${esc(text)} Build this section up to its required minimum.</p>`;
 
 // rows: array of objects; the first column is the row header.
 function table(rows) {
@@ -70,22 +69,44 @@ async function recommendations() {
     : caption("No recommendations yet: fill in Recommendations in DECISIONS.md, run python -m analysis, then commit and push."));
 }
 
-// ---- 1. Beyond Accuracy (card-based, every model at 0.50) ----
+// ---- 1. Beyond Accuracy (one card at a time, with an all-at-once view) ----
 function positiveClassNote(key) {
   return key === "readmission"
     ? "Positive class: readmitted within 30 days of discharge (target == 1)."
     : "Positive class: doctor diagnosis or HbA1c ≥ 6.5% (target == 1).";
 }
 
+function beyondAccuracyControls(res) {
+  const models = m11.MODELS.filter((m) => m in res.models);
+  const options = models.map((m) => `<option value="${m}" ${m === state.cardModel ? "selected" : ""}>${esc(m11.MODEL_LABEL[m])}</option>`).join("");
+  const toggleLabel = state.cardMode === "single" ? "Show all models at once" : "Show one model at a time";
+  return `
+    <div class="slider" style="margin-bottom: 12px; gap: 10px;">
+      <label>Model <select id="card-model">${options}</select></label>
+      <button id="card-toggle" type="button">${esc(toggleLabel)}</button>
+    </div>
+  `;
+}
+
 function beyondAccuracy(res) {
+  const models = m11.MODELS.filter((m) => m in res.models);
   const parts = [];
-  for (const model of m11.MODELS) {
-    if (!(model in res.models)) continue;
-    const [p, y] = m11.preds(res, model, "test");
-    parts.push(modelCard(model, TEST, "test", p, y, 0.5));
+  if (state.cardMode === "all") {
+    for (const model of models) {
+      const [p, y] = m11.preds(res, model, "test");
+      parts.push(modelCard(model, TEST, "test", p, y, 0.5));
+    }
+  } else {
+    const model = state.cardModel;
+    if (model in res.models) {
+      const [p, y] = m11.preds(res, model, "test");
+      parts.push(modelCard(model, TEST, "test", p, y, 0.5));
+    }
   }
   return `
-    ${caption(`${TEST} · every model at threshold 0.50. ${positiveClassNote(state.key)}`)}<div class="cards">${parts.join("")}</div>
+    ${caption(`${TEST} · every model at threshold 0.50. ${positiveClassNote(state.key)}`)}
+    ${beyondAccuracyControls(res)}
+    <div class="cards">${parts.join("")}</div>
     <p class="caption">Accuracy alone misleads when the positive class is rare: a model that clears everyone looks accurate but misses every positive. Read each card as four groups of patients, not one percentage.</p>
   `;
 }
@@ -98,7 +119,6 @@ function svgROC(roc, w, h) {
   const scaleY = (y) => pad + (1 - y) * plotH;
   let d = `M${scaleX(0)},${scaleY(0)}`;
   for (let i = 0; i < roc.fpr.length; i++) d += ` L${scaleX(roc.fpr[i])},${scaleY(roc.tpr[i])}`;
-  const diag = `M${scaleX(0)},${scaleY(0)} L${scaleX(1)},${scaleY(1)}`;
   return `<svg viewBox="0 0 ${w} ${h}" class="roc-svg" role="img" aria-label="ROC curve">
     <line x1="${scaleX(0)}" y1="${scaleY(0)}" x2="${scaleX(1)}" y2="${scaleY(1)}" class="diag" />
     <polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${roc.fpr.map((f, i) => `${scaleX(f)},${scaleY(roc.tpr[i])}`).join(" ")}" />
@@ -115,7 +135,49 @@ function svgROC(roc, w, h) {
   </svg>`;
 }
 
-function thresholdControl(res, model) {
+function buildThresholdTable(thr, m, m05, delta) {
+  return `
+    <table>
+      <tr><th></th><th>At ${thr.toFixed(2)}</th><th>At 0.50</th><th>Change vs 0.50</th></tr>
+      <tr><th scope="row">Sensitivity / TPR</th><td class="num">${m11.fmtPct(m.sensitivity)}</td><td class="num">${m11.fmtPct(m05.sensitivity)}</td><td class="num">${delta(m.sensitivity, m05.sensitivity)}</td></tr>
+      <tr><th scope="row">Specificity</th><td class="num">${m11.fmtPct(m.specificity)}</td><td class="num">${m11.fmtPct(m05.specificity)}</td><td class="num">${delta(m.specificity, m05.specificity)}</td></tr>
+      <tr><th scope="row">Precision</th><td class="num">${m11.fmtPct(m.precision)}</td><td class="num">${m11.fmtPct(m05.precision)}</td><td class="num">${delta(m.precision, m05.precision)}</td></tr>
+      <tr><th scope="row">False positive rate</th><td class="num">${m11.fmtPct(m.fpr)}</td><td class="num">${m11.fmtPct(m05.fpr)}</td><td class="num">${delta(m.fpr, m05.fpr)}</td></tr>
+      <tr><th scope="row">Flagged per 100</th><td class="num">${m.flagged_per_100 !== null ? m.flagged_per_100.toFixed(1) : "undefined"}</td><td class="num">${m05.flagged_per_100 !== null ? m05.flagged_per_100.toFixed(1) : "undefined"}</td><td class="num">—</td></tr>
+    </table>
+  `;
+}
+
+function thresholdSlider(thr) {
+  return `
+    <div class="slider">
+      <label>Threshold <output id="thr-out">${thr.toFixed(2)}</output></label>
+      <input type="range" id="thr-slider" min="0" max="1" step="0.01" value="${thr}">
+    </div>
+  `;
+}
+
+// Lightweight update of threshold-dependent parts (slider element stays intact for fluid dragging).
+function updateThresholdDisplay(res, model) {
+  const [p, y] = m11.preds(res, model, "test");
+  const thr = state.thr;
+  const roc = m11.roc(p, y);
+  const c = m11.confusion(p, y, thr);
+  const m = m11.metrics(c);
+  const c05 = m11.confusion(p, y, 0.5);
+  const m05 = m11.metrics(c05);
+  const delta = (a, b) => {
+    if (a === null || b === null) return "";
+    const d = (a - b) * 100;
+    return d >= 0 ? `+${d.toFixed(1)}%` : `${d.toFixed(1)}%`;
+  };
+  $("thr-out").textContent = thr.toFixed(2);
+  $("thr-slider").value = thr;
+  $("thr-roc").innerHTML = svgROC(roc, 520, 360);
+  $("thr-metrics").innerHTML = buildThresholdTable(thr, m, m05, delta);
+}
+
+function thresholdPage(res, model) {
   const [p, y] = m11.preds(res, model, "test");
   const roc = m11.roc(p, y);
   const auroc = m11.auroc(p, y);
@@ -133,22 +195,12 @@ function thresholdControl(res, model) {
     <div class="cols">
       <div class="box" style="flex: 1">
         ${caption(`${TEST} · ${m11.MODEL_LABEL[model]} — AUROC ${m11.fmtNum(auroc)} (ranking, not accuracy)`)}
-        ${svgROC(roc, 520, 360)}
+        <div id="thr-roc">${svgROC(roc, 520, 360)}</div>
         <p class="caption">ROC curve: each point is a threshold. The diagonal is chance guessing. AUROC is the area under it.</p>
       </div>
       <div class="box" style="flex: 1; display: flex; flex-direction: column">
-        <div class="slider">
-          <label>Threshold <output id="thr-out">${thr.toFixed(2)}</output></label>
-          <input type="range" id="thr-slider" min="0" max="1" step="0.01" value="${thr}">
-        </div>
-        <table>
-          <tr><th></th><th>At ${thr.toFixed(2)}</th><th>At 0.50</th><th>Change vs 0.50</th></tr>
-          <tr><th scope="row">Sensitivity / TPR</th><td class="num">${m11.fmtPct(m.sensitivity)}</td><td class="num">${m11.fmtPct(m05.sensitivity)}</td><td class="num">${delta(m.sensitivity, m05.sensitivity)}</td></tr>
-          <tr><th scope="row">Specificity</th><td class="num">${m11.fmtPct(m.specificity)}</td><td class="num">${m11.fmtPct(m05.specificity)}</td><td class="num">${delta(m.specificity, m05.specificity)}</td></tr>
-          <tr><th scope="row">Precision</th><td class="num">${m11.fmtPct(m.precision)}</td><td class="num">${m11.fmtPct(m05.precision)}</td><td class="num">${delta(m.precision, m05.precision)}</td></tr>
-          <tr><th scope="row">False positive rate</th><td class="num">${m11.fmtPct(m.fpr)}</td><td class="num">${m11.fmtPct(m05.fpr)}</td><td class="num">${delta(m.fpr, m05.fpr)}</td></tr>
-          <tr><th scope="row">Flagged per 100</th><td class="num">${m.flagged_per_100 !== null ? m.flagged_per_100.toFixed(1) : "undefined"}</td><td class="num">${m05.flagged_per_100 !== null ? m05.flagged_per_100.toFixed(1) : "undefined"}</td><td class="num">—</td></tr>
-        </table>
+        ${thresholdSlider(thr)}
+        <div id="thr-metrics">${buildThresholdTable(thr, m, m05, delta)}</div>
         <p class="caption">The threshold is a decision separate from the model. Moving it trades missed positives against false alarms — there is no single "best" threshold for every job.</p>
       </div>
     </div>
@@ -156,10 +208,10 @@ function thresholdControl(res, model) {
 }
 
 function threshold(res, model) {
-  return thresholdControl(res, model);
+  return thresholdPage(res, model);
 }
 
-// ---- 3. Training vs. Test (paired bar chart) ----
+// ---- 3. Training vs. Test (paired bar chart + table, single page) ----
 function svgBarChart(summary, w, h) {
   const pad = { t: 30, r: 30, b: 50, l: 60 };
   const plotW = w - pad.l - pad.r, plotH = h - pad.t - pad.b;
@@ -182,8 +234,9 @@ function svgBarChart(summary, w, h) {
     bars += `<rect x="${testX}" y="${scaleY(v.test)}" width="${barW}" height="${testH}" fill="var(--test)" class="bar-test" />`;
     labels += `<text x="${scaleX(i)}" y="${pad.t + plotH + 20}" text-anchor="middle" font-size="11">${esc(m11.MODEL_LABEL[m])}</text>`;
     const gap = v.gap !== null ? v.gap : 0;
-    const flag = gap > 0.15 ? `<text x="${scaleX(i)}" y="${scaleY(Math.max(v.train, v.test)) - 6}" text-anchor="middle" fill="var(--pos)" font-size="10" font-weight="600">⚠ gap ${(gap * 100).toFixed(0)} pts</text>` : "";
-    gaps += flag;
+    if (gap > 0.15) {
+      gaps += `<text x="${scaleX(i)}" y="${scaleY(Math.max(v.train, v.test)) - 6}" text-anchor="middle" fill="var(--pos)" font-size="11" font-weight="700">⚠</text>`;
+    }
   });
   const ticks = [0, 0.25, 0.5, 0.75, 1];
   let yaxis = "";
@@ -209,8 +262,8 @@ function trainVsTest(res) {
     if (!(model in s)) continue;
     const v = s[model];
     const gap = v.gap !== null ? (v.gap * 100).toFixed(1) : "undefined";
-    const flag = v.gap !== null && v.gap > 0.15 ? " — large gap: may have memorised training patients" : "";
-    parts.push(`<tr><th scope="row">${esc(m11.MODEL_LABEL[model])}</th><td class="num">${m11.fmtNum(v.train)}</td><td class="num">${m11.fmtNum(v.test)}</td><td class="num">${gap} pts</td><td>${flag ? `<span class="warn">${esc(flag)}</span>` : "—"}</td></tr>`);
+    const flag = v.gap !== null && v.gap > 0.15 ? `⇔ potential training memorization (gap ${gap} pts)` : "—";
+    parts.push(`<tr><th scope="row">${esc(m11.MODEL_LABEL[model])}</th><td class="num">${m11.fmtNum(v.train)}</td><td class="num">${m11.fmtNum(v.test)}</td><td class="num">${gap} pts</td><td class="flag-cell">${flag === "—" ? "—" : `<span class="flash-warn">${esc(flag)}</span>`}</td></tr>`);
   }
   return `
     ${caption(`${TRAIN} vs ${TEST} · AUROC on rows the model learned from, and on rows it never saw. A training result is never a test result.`)}
@@ -245,15 +298,30 @@ async function render() {
   [...$("model").options].forEach((o) => { o.text = m11.MODEL_LABEL[o.value] + (o.value in res.models ? "" : " (not trained yet)"); });
   content.innerHTML = model in res.models ? RENDER[section](res, model)
     : `<p class="warn">${esc(m11.MODEL_LABEL[model])} has no results yet: run <code>python -m analysis</code>, then commit and push <code>results/</code>.</p>`;
-  // wire up the threshold slider only when on section 2
+
+  // Section 1 controls: card model dropdown + all/one toggle
+  if (section === SECTIONS[0]) {
+    const cardModel = $("card-model");
+    const cardToggle = $("card-toggle");
+    if (cardModel && cardToggle) {
+      cardModel.onchange = (e) => { state.cardModel = e.target.value; render(); };
+      cardToggle.onclick = () => {
+        state.cardMode = state.cardMode === "single" ? "all" : "single";
+        render();
+      };
+    }
+  }
+
+  // Section 2: wire up the slider once; on input, update only the threshold-dependent
+  // parts (metrics table + ROC chart) so the slider element itself is never destroyed
+  // mid-drag, keeping the drag fluid.
   if (section === SECTIONS[1]) {
     const slider = $("thr-slider");
     const out = $("thr-out");
     if (slider && out) {
       slider.oninput = (e) => {
         state.thr = Number(e.target.value);
-        out.textContent = state.thr.toFixed(2);
-        render();
+        updateThresholdDisplay(res, model);
       };
     }
   }

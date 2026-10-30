@@ -63,6 +63,22 @@ svg .rule { stroke: var(--fg); stroke-width: 3; }
 .bar-train { cursor: default; }
 .bar-test { cursor: default; }
 
+/* Flashing warning for Section 3 flags */
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.flash-warn {
+  animation: flash 1.2s infinite;
+  font-weight: 700;
+  color: var(--pos);
+  white-space: nowrap;
+}
+.flag-cell { white-space: nowrap; }
+
+/* Larger double-headed arrow used in Section 3 flags */
+.flag-cell .flash-warn { font-size: 1.15em; }
+
 .slider input { flex: 1; max-width: 480px; accent-color: var(--accent); }
 .slider output { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 3ch; }
 @media (max-width: 760px) {
