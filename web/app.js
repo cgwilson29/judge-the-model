@@ -173,19 +173,19 @@ function modelCard(model, label, part, p, y, thr) {
   const labelLine = `<div class="card-head"><strong>${esc(m11.MODEL_LABEL[model])}</strong> <span class="badge">${esc(label)} · threshold ${thr.toFixed(2)}</span></div>`;
   const groups = `
     <div class="card-grid">
-      <div class="card-cell"><div class="stat-big">${int(c.tp)}</div><div class="stat-label">correctly flagged positives</div></div>
-      <div class="card-cell"><div class="stat-big">${int(c.fn)}</div><div class="stat-label">missed positives</div></div>
-      <div class="card-cell"><div class="stat-big">${int(c.fp)}</div><div class="stat-label">false alarms</div></div>
-      <div class="card-cell"><div class="stat-big">${int(c.tn)}</div><div class="stat-label">correctly cleared negatives</div></div>
+      <div class="card-cell"><div class="stat-big">${int(c.tp)}</div><div class="stat-label">actual +, flagged +</div></div>
+      <div class="card-cell"><div class="stat-big">${int(c.fn)}</div><div class="stat-label">actual +, flagged −</div></div>
+      <div class="card-cell"><div class="stat-big">${int(c.fp)}</div><div class="stat-label">actual −, flagged +</div></div>
+      <div class="card-cell"><div class="stat-big">${int(c.tn)}</div><div class="stat-label">actual −, flagged −</div></div>
     </div>
   `;
   const metrics = `
     <table>
       <tr><th scope="row">Accuracy</th><td class="num">${m11.fmtPct(m.accuracy)}</td></tr>
-      <tr><th scope="row">Sensitivity / TPR</th><td class="num">${m11.fmtPct(m.sensitivity)}</td></tr>
-      <tr><th scope="row">Specificity</th><td class="num">${m11.fmtPct(m.specificity)}</td></tr>
+      <tr><th scope="row">Sensitivity / TPR</th><td class="num">${m11.fmtPct(m.sensitivity)}</td><td class="num">of the patients who had the outcome</td></tr>
+      <tr><th scope="row">Specificity</th><td class="num">${m11.fmtPct(m.specificity)}</td><td class="num">of the patients who did not have the outcome</td></tr>
+      <tr><th scope="row">Precision</th><td class="num">${m11.fmtPct(m.precision)}</td><td class="num">of the patients the model flagged</td></tr>
       <tr><th scope="row">False positive rate</th><td class="num">${m11.fmtPct(m.fpr)}</td></tr>
-      <tr><th scope="row">Precision</th><td class="num">${m11.fmtPct(m.precision)}</td></tr>
       <tr><th scope="row">F1</th><td class="num">${m11.fmtPct(m.f1)}</td></tr>
     </table>
   `;
@@ -234,8 +234,15 @@ function beyondAccuracy(res) {
       parts.push(modelCard(model, TEST, "test", p, y, 0.5));
     }
   }
+  // Prevalence and baseline accuracy (majority accuracy) for the test set
+  const [p0, y0] = m11.preds(res, models[0], "test");
+  const prevalence = m11.majorityAccuracy(y0);
   return `
     ${caption(`${TEST} · every model at threshold 0.50. ${positiveClassNote(state.key)}`)}
+    <div class="box" style="margin-bottom: 12px;">
+      <p class="caption">Prevalence: ${m11.fmtPct(prevalence)} of patients had the outcome.</p>
+      <p class="caption">Baseline accuracy ("always predict the most common class"): ${m11.fmtPct(prevalence)} — that's what accuracy looks like with no model at all.</p>
+    </div>
     ${beyondAccuracyControls(res)}
     <div class="cards">${parts.join("")}</div>
     <p class="caption">Accuracy alone misleads when the positive class is rare: a model that clears everyone looks accurate but misses every positive. Read each card as four groups of patients, not one percentage.</p>
@@ -394,6 +401,9 @@ function trainVsTest(res) {
   }
   return `
     ${caption(`${TRAIN} vs ${TEST} · AUROC on rows the model learned from, and on rows it never saw. A training result is never a test result.`)}
+    <div class="box" style="margin-bottom: 12px;">
+      <p class="caption">Patients: ${int(res.train.n)} training, ${int(res.test.n)} test.</p>
+    </div>
     <div class="box" style="margin-bottom: 16px; max-height: 320px; overflow: auto;">${svgBarChart(s, 640, 280)}</div>
     <table>
       <tr><th>Model</th><th>${TRAIN}</th><th>${TEST}</th><th>Gap</th><th>Flag</th></tr>

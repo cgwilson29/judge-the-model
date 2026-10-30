@@ -49,7 +49,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Starfield background — two layers of twinkling stars, no images */
+/* Starfield background — two bright layers of twinkling stars */
 .starfield {
   position: fixed;
   inset: 0;
@@ -60,55 +60,57 @@ html, body {
   pointer-events: none;
 }
 
-/* Layer 1: small distant stars */
+/* Layer 1: bright small stars */
 .starfield::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
-    radial-gradient(1.5px 1.5px at  5%  5%, #fff),
-    radial-gradient(1.5px 1.5px at 15% 25%, #eee),
-    radial-gradient(1px   1px   at 25%  8%, #ddd),
-    radial-gradient(1.5px 1.5px at 40% 15%, #fff),
-    radial-gradient(1px   1px   at 55% 35%, #eee),
-    radial-gradient(1.5px 1.5px at 70% 50%, #ddd),
-    radial-gradient(1px   1px   at 85% 20%, #fff),
-    radial-gradient(1.5px 1.5px at 90% 60%, #eee),
-    radial-gradient(1px   1px   at 10% 70%, #ddd),
-    radial-gradient(1.5px 1.5px at 30% 85%, #fff),
-    radial-gradient(1px   1px   at 65% 90%, #eee),
-    radial-gradient(1.5px 1.5px at 95% 30%, #ddd),
-    radial-gradient(1px   1px   at 50%  5%, #fff),
-    radial-gradient(1.5px 1.5px at 80% 75%, #eee),
-    radial-gradient(1px   1px   at 20% 45%, #ddd);
+    radial-gradient(3px 3px at  5%  5%, #fff),
+    radial-gradient(3px 3px at 15% 25%, #eee),
+    radial-gradient(2px 2px at 25%  8%, #fff),
+    radial-gradient(3px 3px at 40% 15%, #eee),
+    radial-gradient(2px 2px at 55% 35%, #fff),
+    radial-gradient(3px 3px at 70% 50%, #eee),
+    radial-gradient(2px 2px at 85% 20%, #fff),
+    radial-gradient(3px 3px at 90% 60%, #eee),
+    radial-gradient(2px 2px at 10% 70%, #fff),
+    radial-gradient(3px 3px at 30% 85%, #eee),
+    radial-gradient(2px 2px at 65% 90%, #fff),
+    radial-gradient(3px 3px at 95% 30%, #eee),
+    radial-gradient(2px 2px at 50%  5%, #fff),
+    radial-gradient(3px 3px at 80% 75%, #eee),
+    radial-gradient(2px 2px at 20% 45%, #fff);
   background-size:
-    150px 150px, 190px 190px, 130px 130px, 170px 170px, 160px 160px,
-    140px 140px, 180px 180px, 200px 200px, 120px 120px, 210px 210px,
-    130px 130px, 170px 170px, 160px 160px, 190px 190px, 140px 140px;
-  animation: twinkle 4s ease-in-out infinite;
-  opacity: 0.7;
+    140px 140px, 180px 180px, 120px 120px, 160px 160px, 150px 150px,
+    130px 130px, 170px 170px, 190px 190px, 110px 110px, 200px 200px,
+    120px 120px, 160px 160px, 150px 150px, 180px 180px, 130px 130px;
+  animation: twinkle 3s ease-in-out infinite;
+  opacity: 0.9;
 }
 
-/* Layer 2: slightly larger, colored stars (LCARS orange/blue) */
+/* Layer 2: larger colored stars */
 .starfield::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
-    radial-gradient(2.5px 2.5px at 10% 30%, #ff9900),
-    radial-gradient(2px   2px   at 60% 70%, #5cb8ff),
-    radial-gradient(2.5px 2.5px at 85% 15%, #ff9900),
-    radial-gradient(2px   2px   at 30% 80%, #5cb8ff),
-    radial-gradient(2.5px 2.5px at  5% 55%, #ff9900),
-    radial-gradient(2px   2px   at 95% 40%, #5cb8ff),
-    radial-gradient(2.5px 2.5px at 40% 10%, #ff9900),
-    radial-gradient(2px   2px   at 75% 90%, #5cb8ff),
-    radial-gradient(2.5px 2.5px at 15% 60%, #ff9900);
+    radial-gradient(4px 4px at 10% 30%, #ff9900),
+    radial-gradient(3px 3px at 60% 70%, #5cb8ff),
+    radial-gradient(4px 4px at 85% 15%, #ff9900),
+    radial-gradient(3px 3px at 30% 80%, #5cb8ff),
+    radial-gradient(4px 4px at  5% 55%, #ff9900),
+    radial-gradient(3px 3px at 95% 40%, #5cb8ff),
+    radial-gradient(4px 4px at 40% 10%, #ff9900),
+    radial-gradient(3px 3px at 75% 90%, #5cb8ff),
+    radial-gradient(4px 4px at 15% 60%, #ff9900);
   background-size:
-    220px 220px, 240px 240px, 260px 260px, 200px 200px, 280px 280px,
-    190px 190px, 230px 230px, 210px 210px, 250px 250px;
-  animation: twinkle 5s ease-in-out infinite 1.5s;
-  opacity: 0.5;
+    210px 210px, 230px 230px, 250px 250px, 190px 190px, 270px 270px,
+    180px 180px, 220px 220px, 200px 200px, 240px 240px;
+  animation: twinkle 4s ease-in-out infinite 1s;
+  opacity: 0.7;
 }
 
 @keyframes twinkle {
@@ -208,9 +210,9 @@ html, body {
   background: #0000001a;
 }
 
-/* Sidebar stations — semi-transparent so ship background shows through */
+/* Sidebar stations — semi-transparent so starfield shows through */
 .lcars-sidebar {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.55);
   border-right: 4px solid var(--lcars-orange);
   padding: 12px;
   overflow-y: auto;
@@ -251,11 +253,11 @@ html, body {
 #section-select:focus { outline: none; border-color: var(--lcars-blue); color: #ffffff; }
 .lcars-sidebar select option { background: #111111; color: #e6e6e6; }
 
-/* Main content area — semi-transparent so ship background shows through */
+/* Main content area — semi-transparent so starfield shows through */
 .lcars-main {
   padding: 16px;
   overflow-y: auto;
-  background: rgba(0, 0, 0, 0.60);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
   gap: 14px;
