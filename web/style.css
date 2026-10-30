@@ -107,41 +107,42 @@ html, body {
   opacity: 0.8;
 }
 
-/* Central warp glow */
+/* Central warp glow — dimmer so it doesn't wash out stars */
 .warp-center {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 60px;
-  height: 60px;
-  margin-top: -30px;
-  margin-left: -30px;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  margin-left: -20px;
   background: radial-gradient(circle, #5cb8ff 0%, #1a1a1a 70%);
   border-radius: 50%;
-  box-shadow: 0 0 40px #5cb8ff, 0 0 80px rgba(92, 184, 255, 0.4);
-  animation: warp-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 25px #5cb8ff, 0 0 50px rgba(92, 184, 255, 0.25);
+  animation: warp-pulse 2.5s ease-in-out infinite;
   z-index: 1;
+  opacity: 0.8;
 }
 
-/* Individual warp streaks — travel from center outward toward viewer */
+/* Individual warp streaks — subtle, travel from center outward toward viewer */
 .warp-streak {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 2px;
+  width: 1px;
   height: 0;
-  background: linear-gradient(to bottom, transparent, #5cb8ff, transparent);
+  background: linear-gradient(to bottom, transparent, rgba(92, 184, 255, 0.35), transparent);
   transform-origin: 50% 0;
-  border-radius: 1px;
+  border-radius: 0.5px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 @keyframes warp-streak {
   0% { transform: translate(-50%, -50%) scaleY(0) rotate(var(--angle)); opacity: 0; }
-  15% { opacity: 0.9; }
-  100% { transform: translate(-50%, -150%) scaleY(1) rotate(var(--angle)); opacity: 0; }
+  25% { opacity: 0.7; }
+  100% { transform: translate(-50%, -120%) scaleY(1) rotate(var(--angle)); opacity: 0; }
 }
 
 @keyframes twinkle {

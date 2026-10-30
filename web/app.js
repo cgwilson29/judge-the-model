@@ -50,22 +50,22 @@ function initAudio() {
 function createWarpStreaks() {
   const container = document.querySelector(".warp-streaks");
   if (!container) return;
-  const count = 10;
+  const count = 6;
   for (let i = 0; i < count; i++) {
     const streak = document.createElement("div");
     streak.className = "warp-streak";
     const angle = (i / count) * 360;
     streak.style.setProperty("--angle", angle + "deg");
     // Stagger start times and vary durations
-    const duration = 1.2 + Math.random() * 1.0;
+    const duration = 1.5 + Math.random() * 1.0;
     const delay = Math.random() * 2.0;
     streak.style.animation = `warp-streak ${duration.toFixed(2)}s linear ${delay.toFixed(2)}s infinite`;
-    // Vary color: mostly blue, occasional orange
-    streak.style.background = i % 4 === 0
-      ? "linear-gradient(to bottom, transparent, #ff9900, transparent)"
-      : "linear-gradient(to bottom, transparent, #5cb8ff, transparent)";
-    // Vary length slightly
-    streak.style.height = (120 + Math.random() * 80) + "vw";
+    // Subtle color: mostly blue, occasional faint orange
+    streak.style.background = i % 3 === 0
+      ? "linear-gradient(to bottom, transparent, rgba(255, 153, 0, 0.25), transparent)"
+      : "linear-gradient(to bottom, transparent, rgba(92, 184, 255, 0.3), transparent)";
+    // Short length so they don't wash out the background
+    streak.style.height = (60 + Math.random() * 40) + "vh";
     container.appendChild(streak);
   }
 }
