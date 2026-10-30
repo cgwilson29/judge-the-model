@@ -61,22 +61,48 @@ html, body {
   pointer-events: none;
 }
 
-/* Starfield: many small dots, some twinkling */
+/* Starfield: many more small dots, some twinkling */
 .warp-field::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(2px 2px at 20% 30%, #eee, transparent),
-    radial-gradient(2px 2px at 45% 15%, #ddd, transparent),
-    radial-gradient(1px 1px at 70% 40%, #fff, transparent),
-    radial-gradient(2px 2px at 80% 70%, #eee, transparent),
-    radial-gradient(1px 1px at 10% 80%, #ddd, transparent),
-    radial-gradient(2px 2px at 60% 10%, #fff, transparent),
-    radial-gradient(1px 1px at 90% 50%, #eee, transparent),
-    radial-gradient(2px 2px at 30% 60%, #ddd, transparent);
-  background-size: 200px 200px, 250px 250px, 150px 150px, 180px 180px, 220px 220px, 160px 160px, 190px 190px, 210px 210px;
-  animation: twinkle 4s ease-in-out infinite;
+    radial-gradient(2px 2px at 10% 20%, #fff),
+    radial-gradient(2px 2px at 30% 40%, #eee),
+    radial-gradient(1px 1px at 50% 10%, #ddd),
+    radial-gradient(2px 2px at 70% 50%, #fff),
+    radial-gradient(1px 1px at 20% 70%, #eee),
+    radial-gradient(2px 2px at 85% 30%, #ddd),
+    radial-gradient(1px 1px at 40% 85%, #fff),
+    radial-gradient(2px 2px at 90% 80%, #eee),
+    radial-gradient(1px 1px at 60% 20%, #ddd),
+    radial-gradient(2px 2px at 5% 60%, #fff),
+    radial-gradient(1px 1px at 75% 90%, #eee),
+    radial-gradient(2px 2px at 40% 95%, #ddd),
+    radial-gradient(1px 1px at 85% 10%, #fff),
+    radial-gradient(2px 2px at 25% 25%, #eee),
+    radial-gradient(1px 1px at 95% 45%, #ddd);
+  background-size:
+    180px 180px, 220px 220px, 140px 140px, 200px 200px, 160px 160px,
+    190px 190px, 150px 150px, 210px 210px, 170px 170px, 130px 130px,
+    180px 180px, 160px 160px, 140px 140px, 200px 200px, 150px 150px;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+/* More stars on a second layer, slightly larger */
+.warp-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(3px 3px at 15% 35%, #ff9900),
+    radial-gradient(2px 2px at 60% 75%, #5cb8ff),
+    radial-gradient(3px 3px at 80% 20%, #ff9900),
+    radial-gradient(2px 2px at 30% 85%, #5cb8ff),
+    radial-gradient(3px 3px at 5% 50%, #ff9900);
+  background-size: 260px 260px, 240px 240px, 280px 280px, 220px 220px, 300px 300px;
+  animation: twinkle 5s ease-in-out infinite 1s;
+  opacity: 0.6;
 }
 
 /* Central warp glow */
@@ -95,29 +121,24 @@ html, body {
   z-index: 1;
 }
 
-/* Warp streaks — radiating lines that shoot outward from center */
-.warp-streaks {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-}
-.warp-streaks::before,
-.warp-streaks::after {
-  content: "";
+/* Individual warp streaks — travel from center outward toward viewer */
+.warp-streak {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 2px;
-  height: 200vw;
+  width: 3px;
+  height: 0;
   background: linear-gradient(to bottom, transparent, #5cb8ff, transparent);
   transform-origin: 50% 0;
-  animation: warp-streak 1.2s linear infinite;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 2;
 }
-.warp-streaks::after {
-  transform: rotate(90deg);
-  animation-delay: 0.6s;
-  background: linear-gradient(to bottom, transparent, #ff9900, transparent);
+
+@keyframes warp-streak {
+  0% { transform: translate(-50%, -50%) scaleY(0) rotate(var(--angle)); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translate(-50%, -150%) scaleY(1) rotate(var(--angle)); opacity: 0; }
 }
 
 @keyframes twinkle {
