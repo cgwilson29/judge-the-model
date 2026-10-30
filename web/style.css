@@ -49,21 +49,91 @@ html, body {
   overflow: hidden;
 }
 
-/* Ship blueprint background — fixed behind everything, visible on refresh */
-.ship-blueprint {
+/* Warp-speed background — starfield with radiating streaks, no images */
+.warp-field {
   position: fixed;
   inset: 0;
   z-index: 0;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #020202;
+  background: #000000;
   pointer-events: none;
 }
-.ship-blueprint svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+
+/* Starfield: many small dots, some twinkling */
+.warp-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(2px 2px at 20% 30%, #eee, transparent),
+    radial-gradient(2px 2px at 45% 15%, #ddd, transparent),
+    radial-gradient(1px 1px at 70% 40%, #fff, transparent),
+    radial-gradient(2px 2px at 80% 70%, #eee, transparent),
+    radial-gradient(1px 1px at 10% 80%, #ddd, transparent),
+    radial-gradient(2px 2px at 60% 10%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 50%, #eee, transparent),
+    radial-gradient(2px 2px at 30% 60%, #ddd, transparent);
+  background-size: 200px 200px, 250px 250px, 150px 150px, 180px 180px, 220px 220px, 160px 160px, 190px 190px, 210px 210px;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+/* Central warp glow */
+.warp-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin-top: -30px;
+  margin-left: -30px;
+  background: radial-gradient(circle, #5cb8ff 0%, #1a1a1a 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 40px #5cb8ff, 0 0 80px rgba(92, 184, 255, 0.4);
+  animation: warp-pulse 2s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Warp streaks — radiating lines that shoot outward from center */
+.warp-streaks {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+.warp-streaks::before,
+.warp-streaks::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 200vw;
+  background: linear-gradient(to bottom, transparent, #5cb8ff, transparent);
+  transform-origin: 50% 0;
+  animation: warp-streak 1.2s linear infinite;
+}
+.warp-streaks::after {
+  transform: rotate(90deg);
+  animation-delay: 0.6s;
+  background: linear-gradient(to bottom, transparent, #ff9900, transparent);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes warp-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+@keyframes warp-streak {
+  0% { transform: translate(-50%, -100%) scaleY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(-50%, 100%) scaleY(1); opacity: 0; }
 }
 
 /* App shell — full viewport, sits above the ship background */
