@@ -61,11 +61,12 @@ html, body {
   pointer-events: none;
 }
 
-/* Starfield: many more small dots, some twinkling */
+/* Starfield: many more small dots, some twinkling — above streaks */
 .warp-field::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 2;
   background:
     radial-gradient(2px 2px at 10% 20%, #fff),
     radial-gradient(2px 2px at 30% 40%, #eee),
@@ -89,11 +90,12 @@ html, body {
   animation: twinkle 3s ease-in-out infinite;
 }
 
-/* More stars on a second layer, slightly larger */
+/* More stars on a second layer, slightly larger — above streaks so they stay visible */
 .warp-field::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 3;
   background:
     radial-gradient(3px 3px at 15% 35%, #ff9900),
     radial-gradient(2px 2px at 60% 75%, #5cb8ff),
@@ -102,7 +104,7 @@ html, body {
     radial-gradient(3px 3px at 5% 50%, #ff9900);
   background-size: 260px 260px, 240px 240px, 280px 280px, 220px 220px, 300px 300px;
   animation: twinkle 5s ease-in-out infinite 1s;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 /* Central warp glow */
@@ -126,13 +128,14 @@ html, body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 3px;
+  width: 2px;
   height: 0;
   background: linear-gradient(to bottom, transparent, #5cb8ff, transparent);
   transform-origin: 50% 0;
   border-radius: 1px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
+  opacity: 0.7;
 }
 
 @keyframes warp-streak {
