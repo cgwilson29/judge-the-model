@@ -43,21 +43,22 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: var(--bg);
+  background: #000000;
   color: #000000;
   font-family: var(--lcars-font);
-  overflow: hidden; /* app fills the viewport; no background shows */
+  overflow: hidden;
 }
 
-/* Ship blueprint background — fixed behind everything, reliable on refresh */
+/* Ship blueprint background — fixed behind everything, visible on refresh */
 .ship-blueprint {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #050505; /* solid fallback so it never reads as "empty black" */
+  background: #020202;
+  pointer-events: none;
 }
 .ship-blueprint svg {
   width: 100%;
@@ -65,7 +66,7 @@ html, body {
   display: block;
 }
 
-/* App shell — full viewport, transparent so the ship shows between panels */
+/* App shell — full viewport, sits above the ship background */
 .lcars-app {
   position: relative;
   z-index: 1;
@@ -115,7 +116,7 @@ html, body {
   text-transform: uppercase;
 }
 
-/* Body: sidebar + main */
+/* Body: sidebar + main — semi-transparent so the ship shows through */
 .lcars-body {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -132,6 +133,7 @@ html, body {
   margin: 10px;
   position: relative;
   overflow: hidden;
+  background: var(--lcars-light-blue);
 }
 .lcars-panel-blue { border-color: var(--lcars-blue); background: var(--lcars-pale-blue); }
 .lcars-panel-gray { border-color: var(--lcars-gray); background: var(--lcars-gray); }
@@ -149,9 +151,9 @@ html, body {
   background: #0000001a;
 }
 
-/* Sidebar stations — opaque, high contrast */
+/* Sidebar stations — semi-transparent so ship background shows through */
 .lcars-sidebar {
-  background: #000000;
+  background: rgba(0, 0, 0, 0.75);
   border-right: 4px solid var(--lcars-orange);
   padding: 12px;
   overflow-y: auto;
@@ -192,11 +194,11 @@ html, body {
 #section-select:focus { outline: none; border-color: var(--lcars-blue); color: #ffffff; }
 .lcars-sidebar select option { background: #111111; color: #e6e6e6; }
 
-/* Main content area */
+/* Main content area — semi-transparent so ship background shows through */
 .lcars-main {
   padding: 16px;
   overflow-y: auto;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(0, 0, 0, 0.60);
   display: flex;
   flex-direction: column;
   gap: 14px;
